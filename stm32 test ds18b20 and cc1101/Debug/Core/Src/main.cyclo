@@ -1,0 +1,6 @@
+../Core/Src/main.c:61:6:UserLEDHide	1
+../Core/Src/main.c:67:6:UserLEDShow	1
+../Core/Src/main.c:77:5:main	3
+../Core/Src/main.c:289:6:SystemClock_Config	3
+../Core/Src/main.c:352:6:HAL_TIM_PeriodElapsedCallback	2
+../Core/Src/main.c:369:6:Error_Handler	1

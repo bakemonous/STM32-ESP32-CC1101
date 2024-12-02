@@ -1,0 +1,4 @@
+../Core/Src/onewire.c:13:13:SetBaudrate	4
+../Core/Src/onewire.c:48:9:OneWire_ProcessBit	2
+../Core/Src/onewire.c:61:9:OneWire_ProcessByte	3
+../Core/Src/onewire.c:78:16:OneWire_Reset	2

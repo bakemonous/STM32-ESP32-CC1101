@@ -1,0 +1,15 @@
+../Core/Inc/dw_stm32_delay.h:35:22:DWT_Delay_us	24	static
+../Core/Src/cc1101.c:38:19:__spi_write	32	static
+../Core/Src/cc1101.c:50:19:__spi_read	32	static
+../Core/Src/cc1101.c:70:6:TI_write_reg	16	static
+../Core/Src/cc1101.c:75:6:TI_write_burst_reg	16	static
+../Core/Src/cc1101.c:81:6:TI_strobe	16	static
+../Core/Src/cc1101.c:87:6:TI_read_reg	24	static
+../Core/Src/cc1101.c:95:6:TI_read_status	24	static
+../Core/Src/cc1101.c:103:6:TI_read_burst_reg	16	static
+../Core/Src/cc1101.c:109:6:TI_receive_packet	24	static
+../Core/Src/cc1101.c:149:6:init_serial	16	static
+../Core/Src/cc1101.c:155:6:TI_send_packet	24	static
+../Core/Src/cc1101.c:178:6:TI_write_settings	8	static
+../Core/Src/cc1101.c:293:6:Power_up_reset	8	static
+../Core/Src/cc1101.c:312:6:TI_init	32	static
