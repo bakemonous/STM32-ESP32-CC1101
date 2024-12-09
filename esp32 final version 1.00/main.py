@@ -30,37 +30,41 @@ def find_temp(buffer):
     p=""
     l1=0
     l2=0
-    for i in range(20):
-        try:
-            buffer1=buffer[i:i+1].decode('utf-8')
-        except:
-            return 0
-        n[0]=n[1]
-        n[1]=n[2]
-        n[2]=buffer1
-        p=n[0]+n[1]+n[2]
-        if (p==code1):
-            l1=i
-        if (p==code2):
-            l2=i
-    print("temp",buffer[0:(l1-3)])
-    temp_template=buffer[0:(l1-2)].decode('utf-8')
-    print("platform slave",buffer[(l1+2):(l2-2)])
-    slave_template=buffer[(l1+2):(l2-7)].decode('utf-16')
-    platform1=os.uname()[0]
-    master_template=platform1
-    to_json = {'slave': slave_template, 'master': master_template,'temp':temp_template}
-    data_out=json.dumps(to_json)
+    try:
+        for i in range(20):
+            try:
+                buffer1=buffer[i:i+1].decode('utf-8')
+            except:
+                return 0
+            n[0]=n[1]
+            n[1]=n[2]
+            n[2]=buffer1
+            p=n[0]+n[1]+n[2]
+            if (p==code1):
+                l1=i
+            if (p==code2):
+                l2=i
+        print("temp",buffer[0:(l1-3)])
+        temp_template=buffer[0:(l1-2)].decode('utf-8')
+        print("temp",temp_template)
+        print("platform slave",buffer[(l1+2):(l2-2)])
+        slave_template=buffer[(l1+2):(l2-7)].decode('utf-16')
+        platform1=os.uname()[0]
+        master_template=platform1
+        to_json = {'slave': slave_template, 'master': master_template,'temp':temp_template}
+        data_out=json.dumps(to_json)
 
-    with open('sw_templates.json', 'w') as f:
-        f.write(json.dumps(to_json))
-    if __name__ == "__main__":
-        try:
-            main(data_out)
-            print("next")
-        except OSError as e:
-            print("Error: " + str(e))
-            reset()
+        with open('sw_templates.json', 'w') as f:
+            f.write(json.dumps(to_json))
+        if (int(temp_template)< 200):
+            try:
+                main(data_out)
+                print("next")
+            except OSError as e:
+                print("Error: " + str(e))
+                reset()
+    except:
+        return 0
 def bytes_to_int(bytes):
   return int.from_bytes(bytes, byteorder='big', signed=False)
 def check_reg():

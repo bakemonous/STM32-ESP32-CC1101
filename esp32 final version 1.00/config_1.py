@@ -11,15 +11,15 @@
 # Released under MIT license
 
 BOARD = "Wroom-1 S3 - ESP32S3"  # Reminder which board you have configured. Has no effect.
-SPI_ID_LIST = [2]  # List with all possible SPI hardware channel ID's for your board
-MISO_PIN_PER_SPI_ID = {"2": 19}  # Pin number of MISO for every SPI channel ID of your board
+SPI_ID_LIST = [1]  # List with all possible SPI hardware channel ID's for your board
+MISO_PIN_PER_SPI_ID = {"1": 13}  # Pin number of MISO for every SPI channel ID of your board
 BUTTON = 38  # User button on S2 Pico is connected to port 0
 
-SPI_ID = 2  # Hardware SPI channel ID to use for communication with your CC1101
-SS_PIN = 5  # Slave select pin connected to CC1101's CSn. Dependent on your hardware design
+SPI_ID = 1  # Hardware SPI channel ID to use for communication with your CC1101
+SS_PIN = 10  # Slave select pin connected to CC1101's CSn. Dependent on your hardware design
 GD02_PIN = 4  # Pin connected to CC101's GD02 pin. Dependent on your hardware design
-sck = 18
-mosi = 23
+sck = 12
+mosi = 11
 # The constants below can be set later, after discovering their values by
 # running itho.py via the repl
 ITHO_REMOTE_TYPE = 22  # Your Itho remote device type, 22 is an Itho RFT remote
