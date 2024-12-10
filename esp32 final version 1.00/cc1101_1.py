@@ -11,11 +11,12 @@
 import array
 import time
 import gc
+import config_1  # hardware dependent configuration
 
 from machine import SPI, Pin
 from micropython import const
+from config_1 import ESP32, ESP32_S3 
 
-import config_1  # hardware dependent configuration
 def bitfield(n):
     return [int(digit) for digit in bin(n)[2:]] # [2:] to chop off the "0b" part 
 def get_bit(num: int, pos: int) -> bool:
@@ -176,6 +177,7 @@ class CC1101:
     STATE_TXFIFO_UNDERFLOW = const(0x70)  # TX FIFO has underflowed
 
     def __init__(self, spi_id, ss, gd02):
+        ESP32_SPI=ESP32(ESP32_S3)
         """ Create a CC1101 object connected to a microcontroller SPI channel
 
         This class assumes the usage of SPI hardware channels and the
@@ -186,19 +188,16 @@ class CC1101:
         :param int ss: microcontroller pin number used for slave select (SS)
         :param int gd02: microcontroller pin number connected to port GD02 of the CC1101
         """
-        if spi_id not in config_1.SPI_ID_LIST:
+        if spi_id not in ESP32_SPI.SPI_ID_LIST:
             raise ValueError(f"invalid SPI id {spi_id} for {config.BOARD}")
 
-        self.miso = Pin(config_1.MISO_PIN_PER_SPI_ID[str(spi_id)])
+        self.miso = Pin(ESP32_SPI.MISO_PIN_PER_SPI_ID[str(spi_id)])
         self.ss = Pin(ss, mode=Pin.OUT)
         self.gd02 = Pin(gd02, mode=Pin.IN)
-        #self.sck = Pin(sck, mode=Pin.OUT)
-        #self.mosi = Pin(mosi, mode=Pin.OUT)
         self.deselect()
         self.spi = SPI(spi_id, baudrate=8000000, polarity=0, phase=0, bits=8,
                        firstbit=SPI.MSB)  # use default pins for mosi, miso and sclk
         self.reset()
-        #self.write_register(CC1101.IOCFG2, 0x06)
         self.write_register(CC1101.IOCFG2, 0x29)
         self.write_register(CC1101.IOCFG1, 0x2E)
         print("0x02,0x06=0x02,",self.read_register(CC1101.IOCFG0))
@@ -207,48 +206,34 @@ class CC1101:
         self.write_register(CC1101.FIFOTHR, 0x47)
         self.write_register(CC1101.SYNC1, 0xD3)
         self.write_register(CC1101.SYNC0, 0x91)
-        #self.write_register(CC1101.PKTLEN, 0x3C)
         self.write_register(CC1101.PKTLEN, 0xFF)
         #self.write_register(CC1101.PKTCTRL1, 0x8C)  # only pkts that pass CRC check
         self.write_register(CC1101.PKTCTRL1, 0x04)
-        #self.write_register(CC1101.PKTCTRL0, 0x45)
         self.write_register(CC1101.PKTCTRL0, 0x05)
         self.write_register(CC1101.ADDR, 0x00)
         self.write_register(CC1101.CHANNR, 0x00)
         self.write_register(CC1101.FSCTRL1, 0x08)
         self.write_register(CC1101.FSCTRL0, 0x00)
-        #self.write_register(CC1101.FREQ2, 0x21)
         self.write_register(CC1101.FREQ2, 0x10)
         #self.write_register(CC1101.FREQ1, 0x71) # 71 may need tweaking
         self.write_register(CC1101.FREQ1, 0xB4)
         #self.write_register(CC1101.FREQ0, 0xC0) # C0 or 7A may need tweaking
         self.write_register(CC1101.FREQ0, 0x2E)
-        #self.write_register(CC1101.MDMCFG4, 0x7B)
         self.write_register(CC1101.MDMCFG4, 0xCA)
         self.write_register(CC1101.MDMCFG3, 0x83)
         #self.write_register(CC1101.MDMCFG2, 0x13) # MDMCFG2 Modem Configuration 0x13
         self.write_register(CC1101.MDMCFG2, 0x93)
-        #self.write_register(CC1101.MDMCFG1, 0x52)
         self.write_register(CC1101.MDMCFG1, 0x22)
         self.write_register(CC1101.MDMCFG0, 0xF8)
-        #self.write_register(CC1101.DEVIATN, 0x43)
         self.write_register(CC1101.DEVIATN, 0x34)
-        #self.write_register(CC1101.FREND1, 0xB6)
         self.write_register(CC1101.MCSM2, 0x07)
-        #self.write_register(CC1101.MCSM1, 0x3F)
         self.write_register(CC1101.MCSM1, 0x30)
         self.write_register(CC1101.MCSM0, 0x18)
-        #self.write_register(CC1101.FOCCFG, 0x1D)
         self.write_register(CC1101.FOCCFG, 0x16)
-        #self.write_register(CC1101.BSCFG, 0x1F)
         self.write_register(CC1101.BSCFG, 0x6C)
-        #self.write_register(CC1101.AGCCTRL2, 0xC7)
         self.write_register(CC1101.AGCCTRL2, 0x43)
-        #self.write_register(CC1101.AGCCTRL1, 0x00)
         self.write_register(CC1101.AGCCTRL1, 0x40)
-        #self.write_register(CC1101.AGCCTRL0, 0xB2)
         self.write_register(CC1101.AGCCTRL0, 0x91)
-        #self.write_register(CC1101.FSCAL3, 0xEA)
         self.write_register(CC1101.WOREVT1, 0x87)
         self.write_register(CC1101.WOREVT0, 0x6B)
         self.write_register(CC1101.WORCTRL, 0xF8)
@@ -266,10 +251,38 @@ class CC1101:
         self.write_register(CC1101.TEST2, 0x81)
         self.write_register(CC1101.TEST1, 0x35)
         self.write_register(CC1101.TEST0, 0x09)
-        #self.write_register(0x02, 0x09)
-        ##self.write_register(0x02, 0x06)
-        ##self.write_register(0x7E, 0xC2)
         
+        self.check_reg()
+
+    def select(self):
+        """ CC1101 chip select """
+        self.ss.value(0)
+
+    def deselect(self):
+        """ CC1101 chip deselect """
+        self.ss.value(1)
+
+    def spi_wait_miso(self):
+        """ Wait for CC1101 SO to go low """
+        while self.miso.value() != 0:
+            pass
+
+    def reset(self):
+        """ CC1101 reset """
+        self.deselect()
+        time.sleep_us(5)
+        self.select()
+        time.sleep_us(10)
+        self.deselect()
+        time.sleep_us(45)
+        self.select()
+
+        self.spi_wait_miso()
+        self.write_command(CC1101.SRES)
+        time.sleep_ms(10)
+        self.deselect()
+        
+    def check_reg(self):
         print("0x00,0x29=0x00,",hex(self.read_register(0x00)))
         print("0x01,0x2E=0x01,",hex(self.read_register(0x01)))
         print("0x02,0x06=0x02,",hex(self.read_register(0x02)))
@@ -318,36 +331,7 @@ class CC1101:
         print("0x2D,0x35=0x2D,",hex(self.read_register(0x2D)))
         print("0x2E,0x09=0x2E,",hex(self.read_register(0x2E)))
         print(" ")
-
-    def select(self):
-        """ CC1101 chip select """
-        self.ss.value(0)
-
-    def deselect(self):
-        """ CC1101 chip deselect """
-        self.ss.value(1)
-
-    def spi_wait_miso(self):
-        """ Wait for CC1101 SO to go low """
-        while self.miso.value() != 0:
-            pass
-
-    def reset(self):
-        """ CC1101 reset """
-        self.deselect()
-        time.sleep_us(5)
-        self.select()
-        time.sleep_us(10)
-        self.deselect()
-        time.sleep_us(45)
-        self.select()
-
-        self.spi_wait_miso()
-        self.write_command(CC1101.SRES)
-        time.sleep_ms(10)
-        # self.spi_wait_miso()
-        self.deselect()
-
+        
     def write_command(self, command):
         """ Write command strobe
 
@@ -372,7 +356,6 @@ class CC1101:
         
     def CheckRxFifo(self,delay):
         gdo0 = Pin(2)
-        #CC1101.trxstate=2
         self.strobe_REG(0x36);#CC1101_SIDLE
         self.strobe_REG(0x34);   #CC1101_SRX     
         if(self.read_register(0x3B) & 0x7F):#CC1101_RXBYTES-0x3B BYTES_IN_RXFIFO-
@@ -402,11 +385,9 @@ class CC1101:
         self.miso = Pin(config_1.MISO_PIN_PER_SPI_ID[str(spi_id)])
         value = bytearray(2)
         temp = bytearray(2)
-        #value=0
-        #temp=0
         temp[0]= address | READ_BURST
         self.select()
-        self.spi.write_readinto(temp, value)#work not right
+        self.spi.write_readinto(temp, value)
         self.deselect()
         return value
             
@@ -414,50 +395,22 @@ class CC1101:
         self.miso = Pin(config_1.MISO_PIN_PER_SPI_ID[str(spi_id)])
         value = bytearray(2)
         temp = bytearray(2)
-        #value=0
-        #temp=0
         temp[0]= address | READ_SINGLE_BYTE
         self.select()
-        self.spi.write_readinto(temp, value)#work not right
+        self.spi.write_readinto(temp, value)
         self.deselect()
         return value
     
-#     def SpiStart(self):
             
     def CheckCRC(self):
         lqi=self.read_register(0x33)#read_register_status CC1101_LQI-0x33
-        #print("bit-lqi",bitfield(lqi))
-        crc_ok = get_bit(lqi, 7)#get_bit(lqi, 7)
-        #print("lqi",lqi)
+        crc_ok = get_bit(lqi, 7)
         if (crc_ok == 1):
             return 1
         else:
             self.write_command(CC1101.SFRX)
             self.write_command(CC1101.SRX)
             return 0
-        '''
-        lqi=self.read_register(0x33)
-        crc_ok = lqi & 7
-        n = self.read_register(0x7F)
-        if (get_bit(self.read_register(0x33), 7) == 1):
-            return 1
-        else:
-            return 0
-        '''
-
-            
-        
-    '''def SpiReadBurstReg(self,addr, buffer,num):
-        byte i,temp
-        SpiStart()
-        temp = 0x3F | 0xC0
-        self.select 
-        self.spi_wait_miso
-            while(self.miso.value()):
-                SPI.transfer(temp)
-                for(i=0;i<num;i++):
-                    buffer[i]=SPI.transfer(0)
-        self.deselect'''
                 
     def read_register(self, address, register_type=0x80):
         """ Read value from configuration or status register
@@ -535,34 +488,6 @@ class CC1101:
         :param int address: byte address of register
         :param int register_type: C1101.CONFIG_REGISTER (default) or STATUS_REGISTER
         :return int: register value (byte)
-        """
-        """
-        def SpiReadStatus
-        byte value,temp;
-        SpiStart();
-        temp = addr | READ_BURST;
-        digitalWrite(SS_PIN, LOW);
-        while(digitalRead(MISO_PIN));
-            SPI.transfer(temp);
-            value=SPI.transfer(0);
-            digitalWrite(SS_PIN, HIGH);
-            SpiEnd();
-        return value;
-        """
-        """
-        void ELECHOUSE_CC1101::SpiStart(void){
-            // initialize the SPI pins
-            pinMode(SCK_PIN, OUTPUT);
-            pinMode(MOSI_PIN, OUTPUT);
-            pinMode(MISO_PIN, INPUT);
-            pinMode(SS_PIN, OUTPUT);
-
-            // enable SPI
-            #ifdef ESP32
-            SPI.begin(SCK_PIN, MISO_PIN, MOSI_PIN, SS_PIN);
-            #else
-            SPI.begin();
-            #endif
         """
         read_buf = bytearray(2)
         write_buf = bytearray(2)
@@ -644,9 +569,6 @@ class CC1101:
             buffer=self.read_burst(0x3F,size)#2-number of bytes
             status=self.read_burst(0x3F,2)
             print("buf",buffer)
-            #status1=status.decode('utf-8')
-            #if (status1==22):
-                #return 0
             print("status",status)
             print("size",size)
             self.write_command(0x36)
@@ -737,8 +659,8 @@ class CC1101:
 
 if __name__ == "__main__":
     # Demo the connection to a CC1101 by reading values from the chip
-
-    cc1101 = CC1101(config_1.SPI_ID, config_1.SS_PIN, config_1.GD02_PIN)
+    ESP32_SPI=ESP32(ESP32_S3)
+    cc1101 = CC1101(ESP32_SPI.SPI_ID, ESP32_SPI.SS_PIN, ESP32_SPI.GD02_PIN)
 
     # Read status byte
     status = cc1101.write_command(CC1101.SNOP)
